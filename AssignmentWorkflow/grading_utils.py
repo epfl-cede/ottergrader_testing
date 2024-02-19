@@ -9,11 +9,11 @@ import itertools as it # iteration tools
 import os # file management tools
 
 
-def grade_and_writeCSV(submissionfile, graderzip, graderoutputfolder, 
-                       graderdetailsfilename="graderdetails", graderresultfilename="graderresult", 
-                       includetestcasemessages=False):
+def grade_single_submission(submissionfile, graderzip, 
+                       graderoutputfolder="gradebook", graderdetailsfilename="graderdetails", graderresultfilename="graderresult", 
+                       includetestcasemessages=True, saveinlocalCSV=True):
     """
-    Grades 1 individual submission file, saves the grading results into CSV files and returns them.
+    Grades 1 individual submission file, saves the grading results into local CSV files and also returns them as objects.
 
     Parameters:
     - submissionfile: path to the individual file to grade (notebook)
@@ -21,7 +21,8 @@ def grade_and_writeCSV(submissionfile, graderzip, graderoutputfolder,
     - graderoutputfolder: name of the folder where to write the CSV files with the outputs of the grading
     - graderdetailsfilename: name of the file where to write the detailed output of the grading (points per exercises and tests outcomes) - default is "graderdetails"
     - graderresultfilename: name of the file where to write the overall grade and feedback message - default is "graderresult"
-    - includetestcasemessages: boolean indicating whether the detailed output from the tests should be included - default is False
+    - includetestcasemessages: boolean indicating whether the detailed output from the tests should be included - default is True
+    - saveinlocalCSV: boolean indicating whether the outputs from the grading (global result + details of the grading) should be saved in CSV files in the folder of the submission - default is True
 
     Returns: 
     - graderresultdf: Pandas dataframe with the resulting grade for this submission (3 columns: "Submission Name", "Grade", "Possible")
@@ -62,22 +63,24 @@ def grade_and_writeCSV(submissionfile, graderzip, graderoutputfolder,
 
     
     # Saving the results to CSV files
-    # Creating the output folder if it does not exist
-    if not os.path.exists(graderoutputfolder):
-        os.mkdir(graderoutputfolder)
+    if saveinlocalCSV:
+        # Creating the output folder if it does not exist
+        if not os.path.exists(graderoutputfolder):
+            os.mkdir(graderoutputfolder)
 
-    # Saving the overall grade
-    graderresultfile = graderoutputfolder+"/"+graderresultfilename+".csv"
-    graderresultdf.to_csv(graderresultfile, index=False, quoting=csv.QUOTE_NONNUMERIC)
+        # Saving the overall grade
+        graderresultfile = graderoutputfolder+"/"+graderresultfilename+".csv"
+        graderresultdf.to_csv(graderresultfile, index=False, quoting=csv.QUOTE_NONNUMERIC)
 
-    # Saving the details
-    graderdetailsfile = graderoutputfolder+"/"+graderdetailsfilename+".csv"
-    graderdetailsdf.to_csv(graderdetailsfile, header=True, index=False, quoting=csv.QUOTE_NONNUMERIC)
+        # Saving the details
+        graderdetailsfile = graderoutputfolder+"/"+graderdetailsfilename+".csv"
+        graderdetailsdf.to_csv(graderdetailsfile, header=True, index=False, quoting=csv.QUOTE_NONNUMERIC)
     
         
     return graderresultdf, graderdetailsdf
 
-def write_moodleCSV(moodlegradebookfile, graderresultdf, graderdetailsdf, 
+
+def write_moodleCSV_single_submission(moodlegradebookfile, graderresultdf, graderdetailsdf, 
                     includedetailsgrades=True, includedetailsmsgs=True):
 
     """
@@ -96,7 +99,7 @@ def write_moodleCSV(moodlegradebookfile, graderresultdf, graderdetailsdf,
     "Last modified (submission)", "Last modified (grade)", "Feedback comments")
     """
 
-    # Read the moodle file
+    # Read the existing moodle file
     moodledf = pd.read_csv(moodlegradebookfile, skip_blank_lines=True)
     #display(moodledf)
     
