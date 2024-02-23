@@ -1,0 +1,20 @@
+#!/bin/bash
+
+tmp_dir=/tmp/zip-tmp
+
+for z in $(find dist/autograder/ -type f -name '*.zip'); do
+	rm -rf ${tmp_dir}
+	mkdir ${tmp_dir}
+	unzip -q ${z} -d ${tmp_dir}
+	# cat ${tmp_dir}/environment.yml
+	sed -i '/- defaults/d' ${tmp_dir}/environment.yml
+	# cat ${tmp_dir}/environment.yml
+	cd ${tmp_dir}
+	zip -r $(basename ${z}) *
+	cd - > /dev/null
+	mv ${tmp_dir}/$(basename ${z}) ${z}
+	rm -rf ${tmp_dir}
+	echo "${z} => fixed"
+done
+
+# EOF
